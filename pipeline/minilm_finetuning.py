@@ -115,7 +115,11 @@ def run_training(DATA_DIR="../../data/hackathon_files_for_participants_ozon", mo
 
 
 argParser = argparse.ArgumentParser()
-argParser.add_argument("--data_dir", help="Path to dir with data")
+argParser.add_argument("--data_dir", 
+                        default=None,
+                        type=str,
+                        required=True,
+                        help="Path to dir with data")
 
 args = argParser.parse_args()
 data_dir=args.data_dir

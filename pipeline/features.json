@@ -1,32 +1,25 @@
-feats = [ 
+{
+  "feats": [
 	"pic_dist_0_perc",
 	"pic_dist_25_perc",
 	"pic_dist_50_perc",
 	"fuzzywuzzy_ratio_cleaned_name",
 	"fuzzywuzzy_ratio_name",
-
-	## bert
 	"euclidean_name_bert_dist",
 	"cosine_name_bert_dist",
 	"jensenshannon_name_bert_dist",
 	"minkowski_name_bert_dist",
 	"sqeuclidean_name_bert_dist",
-
-	## minilm
 	"euclidean_name_minilm_dist",
 	"cosine_name_minilm_dist",
 	"jensenshannon_name_minilm_dist",
 	"minkowski_name_minilm_dist",
 	"sqeuclidean_name_minilm_dist",
-
-	## minilm name + cat
 	"euclidean_name_cat_minilm_dist",
 	"cosine_name_cat_minilm_dist",
 	"jensenshannon_name_cat_minilmt_dist",
 	"minkowski_name_cat_minilm_dist",
 	"sqeuclidean_name_cat_minilm_dist",
-
-	## color
 	"is_same_color",
 	"partial_ratio_color",
 	"is_same_color_Сетевые фильтры, разветвители и удлинители",
@@ -103,29 +96,21 @@ feats = [
 	"is_same_color_Сценическое оборудование и свет",
 	"is_same_color_rest",
 	"is_same_color_Аксессуары для квадрокоптеров",
-
-	## bert resnet
 	"euclidean_bert_main_resnet_dist",
 	"cosine_bert_main_resnet_resnet_dist",
 	"jensenshannon_bert_main_resnet_resnet_dist",
 	"minkowski_bert_main_resnet_resnet_dist",
 	"sqeuclidean_bert_main_resnet_resnet_dist",
-
-	## minilm resnet
 	"euclidean_minilm_main_resnet_dist",
 	"cosine_minilm_main_resnet_resnet_dist",
 	"jensenshannon_minilm_main_resnet_resnet_dist",
 	"minkowski_minilm_main_resnet_resnet_dist",
 	"sqeuclidean_minilm_main_resnet_resnet_dist",
-
-	## main pic resnet
 	"euclidean_main_pic_embeddings_resnet_dist",
 	"cosine_main_pic_embeddings_resnet_dist",
 	"jensenshannon_main_pic_embeddings_resnet_dist",
 	"minkowski_main_pic_embeddings_resnet_dist",
 	"sqeuclidean_main_pic_embeddings_resnet_dist",
-
-	## dist
 	"levenshtein_distance",
 	"damerau_levenshtein_distance",
 	"hamming_distance",
@@ -140,16 +125,14 @@ feats = [
 	"matching_numbers",
 	"matching_numbers_log",
 	"log_fuzz_score"
-]
-
-categorical_feats = [
+  ],
+  "categorical_feats": [
 	"cat3_grouped1",
 	"cat3_grouped2",
 	"cat41",
-	"cat42",
-]
-
-characteristic_feats = [
+	"cat42"
+  ],
+  "characteristic_feats": [
 	"score_MP3-плееры_Объем встроенной памяти",
 	"score_MP3-плееры_Управление воспроизведением",
 	"score_SIM-карты_Домашний регион",
@@ -586,4 +569,5 @@ characteristic_feats = [
 	"score_Электронные модули_Страна-изготовитель",
 	"score_Электронные модули_Тип",
 	"score_Яркость, кд/м2"
-]
+  ]
+}

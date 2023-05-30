@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 
@@ -7,7 +8,6 @@ from catboost import CatBoostClassifier, Pool
 from sklearn.model_selection import train_test_split
 from transliterate import translit
 
-from features import feats, categorical_feats, characteristic_feats
 from utils import pr_auc_macro, seed_everything
 
 pd.set_option("use_inf_as_na", True)
@@ -32,20 +32,21 @@ def run_training(
 
     train_df = pd.read_parquet(os.path.join(DATA_DIR, "train_processed_minilm_chars.parquet"))
     train_df.fillna(0, inplace=True)
+    features = json.load(open("features.json", encoding="utf-8"))
 
     print("train_df.columns:", train_df.columns)
-    print("characteristic_feats:", len(characteristic_feats))
-    data_features = feats + characteristic_feats + categorical_feats
+    print("characteristic_feats:", len(features["characteristic_feats"]))
+    data_features = features["feats"] + features["characteristic_feats"] + features["categorical_feats"] + ["variantid1", "variantid2"]
     model_name = "salavat_kupere"
 
     X_train, X_test = train_test_split(
-        train_df[data_features + ["target", "variantid1", "variantid2"]],
+        train_df[data_features + ["target"]],
         test_size=0.15, random_state=GLOBAL_SEED, stratify=train_df[["target", "cat3_grouped1"]]
     )
     y_test = X_test[["target", "variantid1", "variantid2"]]
     X_test = X_test.drop(columns=["target"])
 
-    params = {"random_seed": GLOBAL_SEED, "eval_metric": "PRAUC", "cat_features": categorical_feats}
+    params = {"random_seed": GLOBAL_SEED, "eval_metric": "PRAUC", "cat_features": features["categorical_feats"]}
     model = CatBoostClassifier(**params)
 
     groups = X_train["cat3_grouped1"]
@@ -59,12 +60,12 @@ def run_training(
         train_pool = Pool(
             data=X_t.drop(columns=["target"]),
             label=y_t,
-            cat_features=categorical_feats
+            cat_features=features["categorical_feats"]
         )
         eval_pool = Pool(
             data=X_val.drop(columns=["target"]),
             label=y_val,
-            cat_features=categorical_feats
+            cat_features=features["categorical_feats"]
         )
         model.fit(
             train_pool,
@@ -82,7 +83,7 @@ def run_training(
         model_path = translit(f"{model_name}_{group_name}", "ru", reversed=True)
         model = model.load_model(os.path.join(model_dir, model_path, ".cbm"), format="cbm")
         X = X_test.loc[X_test["cat3_grouped1"] == group]
-        X_test.loc[X.index, "scores"] = model.predict_proba(X[feats + ["variantid1", "variantid2"]])[:, 1]
+        X_test.loc[X.index, "scores"] = model.predict_proba(X[data_features])[:, 1]
 
         pr_auc_macro_dict = pr_auc_macro(
             target_df=y_test, 

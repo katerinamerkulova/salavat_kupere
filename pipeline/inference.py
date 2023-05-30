@@ -1,12 +1,11 @@
 import argparse
+import json
 import logging
 import os
 
 import pandas as pd
 from catboost import CatBoostClassifier
 from transliterate import translit
-
-from features import feats, categorical_feats, characteristic_feats
 
 logging.basicConfig(format="%(asctime)s - %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S",
@@ -16,16 +15,17 @@ pd.set_option("use_inf_as_na", True)
 
 def run_inference(
         DATA_DIR="../../data/hackathon_files_for_participants_ozon",
-        MODEL_DIR = "../models"
+        MODEL_DIR="../models"
 ):
-    test_features = pd.read_parquet(os.path.join(DATA_DIR, "test_processed_minilm_chars.parquet"))
-    test_features.fillna(0, inplace=True)
+    test_df = pd.read_parquet(os.path.join(DATA_DIR, "test_processed_minilm_chars.parquet"))
+    test_df.fillna(0, inplace=True)
 
-    data_features = feats + characteristic_feats + categorical_feats + ["variantid1", "variantid2"]
+    features = json.load(open("features.json", encoding="utf-8"))
+    data_features = features["feats"] + features["characteristic_feats"] + features["categorical_feats"] + ["variantid1", "variantid2"]
     model_name = "salavat_kupere"
 
     new_model = CatBoostClassifier()
-    submission_example = test_features.copy()
+    submission_example = test_df.copy()
     groups = submission_example["cat3_grouped1"]
     for group in set(groups):
         group_name = "_".join(group.replace("/", " ").split())

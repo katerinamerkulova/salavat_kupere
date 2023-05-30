@@ -241,6 +241,8 @@ def etl_data(
 
     columns_to_drop = [
         "name1", "name2",
+        "name_cat1", "name_cat2",
+        "cat31", "cat32",
         "clean_name1", "clean_name2",
         "categories1", "categories2",
         "color_parsed1", "color_parsed2",
@@ -256,7 +258,8 @@ def etl_data(
         "concat_main_pic_resnet_minilm2",
         "name_bert_641", "name_bert_642",
         "name_minilm1", "name_minilm2",
-        "name_cat_minilm1", "name_cat_minilm1",
+        "name_cat_minilm1", "name_cat_minilm2",
+        "Train"
     ]
     df.drop(columns=columns_to_drop, inplace=True)
 

@@ -1,7 +1,7 @@
 import json
 import time
 import warnings
-
+import os
 import jellyfish as jf
 import numpy as np
 import pandas as pd
@@ -9,27 +9,31 @@ import torch
 from fuzzywuzzy import fuzz
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
-
+import argparse
 from utils import get_pic_features_func, text_dense_distances, preprocess_text, process_characteristics, process_char, process_colors, matching_numbers, make_characteristics_df
-
+import logging
 tqdm.pandas()
 warnings.filterwarnings("ignore")
 pd.set_option('use_inf_as_na', True)
 
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO)
 
-minilm_name = SentenceTransformer('/home/merkulova/hackathon/output/all-MiniLM-L6-v2-2023-05-20_17-54-44', device=0)
+minilm_name = SentenceTransformer('/home/merkulova/hackathon/output/all-MiniLM-L6-v2-2023-05-20_17-54-44', device=0) # PATH TO RELEASE
 minilm_name_cat = SentenceTransformer('/home/merkulova/hackathon/hackathon_master_kate/chars_names_minilm/all-MiniLM-L6-v2-2023-05-26_21-54-53', device=0)
 
 
-def etl_data():
+def etl_data(DATA_DIR="../../data/hackathon_files_for_participants_ozon"):
     start_time = time.time()
     print(f'Start preprocessing dataframe' )
     
-    train_pairs = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/train_pairs.parquet")
-    test_pairs = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/test_pairs_wo_target.parquet")
+    train_pairs = pd.read_parquet(os.path.join(DATA_DIR,"train_pairs.parquet"))
+    test_pairs = pd.read_parquet(os.path.join(DATA_DIR,"test_pairs_wo_target.parquet"))
 
-    train = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/train_data.parquet")  # kate_hackathon_data/train_data_trained_minilm.parquet
-    test = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/test_data.parquet")  # kate_hackathon_data/test_data_trained_minilm.parquet
+    train = pd.read_parquet(os.path.join(DATA_DIR,"train_data.parquet"))
+    test = pd.read_parquet(os.path.join(DATA_DIR,"test_data.parquet"))
 
     data = pd.concat([train, test])
 
@@ -50,15 +54,7 @@ def etl_data():
         if cat3_counts[cat3] < COUNT_GROUP: #1_000
             cntr += cat3_counts[cat3]
     data["cat3_grouped"] = data["cat3"].progress_apply(lambda x: x if cat3_counts[x] > COUNT_GROUP else "rest")
-    ## =========
-    # TODO Add pairs with transitivity rule
-    ## =========
 
-    # print(f'Preprocessing characteristics' )
-    # data, characteristics = process_characteristics(data)
-    # print('Characteristics features', len(characteristics))
-    # with open('chars.txt', 'w', encoding='utf-8') as out:
-    #     out.write('\n'.join(sorted(characteristics)))
     
     df = (
 	train_pairs
@@ -230,10 +226,7 @@ def etl_data():
     df['jaro_winkler_similarity'] = df.progress_apply(
     lambda x: jf.jaro_winkler_similarity(x['clean_name1'], 
                                          x['clean_name2']), axis=1)
-    # error lambda x: jf.match_rating_comparison(x['name1'], pyo3_runtime.PanicException: called `Option::unwrap()` on a `None` value
-    # df['match_rating_comparison'] = df.progress_apply(
-    # lambda x: jf.match_rating_comparison(x['clean_name1'], 
-    #                                      x['clean_name2']), axis=1).astype(int)
+
 
     df['partial_ratio'] = df.progress_apply(
     lambda x: fuzz.partial_ratio(x['clean_name1'], 
@@ -297,11 +290,19 @@ def etl_data():
     test = df[df['Train'] == False]
     
     train.drop(columns=['Train'])
-    train.to_parquet('../../data/train_processed_minilm_chars.parquet', index=False)
+    train.to_parquet(os.path.join(DATA_DIR,'train_processed_minilm_chars.parquet'), index=False)
     
     test.drop(columns=['Train'])
-    test.to_parquet('../../data/test_processed_minilm_chars.parquet', index=False)
+    test.to_parquet(os.path.join(DATA_DIR,'test_processed_minilm_chars.parquet'), index=False)
     return df
 
 if __name__ == "__main__":
-    etl_data()
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("--data_dir", help="Path to dir with data")
+
+    args = argParser.parse_args()
+    data_dir=args.data_dir
+    if data_dir is not None:
+        etl_data(DATA_DIR=data_dir)
+    else:
+        logging.error("no --data_dir param as input")        

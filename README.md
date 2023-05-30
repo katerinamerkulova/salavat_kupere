@@ -2,9 +2,9 @@
 
 * DATA_DIR="Path_to_folder"
 
-# Activate venv 
+# Install requirements
 
-`source /venv/bin/activate` 
+`pip install -r requirements.txt`
 
 ## Next steps execute from folder `pipeline` so:
 

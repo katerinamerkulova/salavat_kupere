@@ -12,8 +12,7 @@
 
 # Prepare embeddings
 
-
-`python prepare_embeddings.py`
+`python minilm_finetuning.py --data_dir="../data/"`
 
 # Preprocess dataset
 

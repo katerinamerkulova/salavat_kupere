@@ -41,13 +41,13 @@ def run_training(DATA_DIR="../../data/hackathon_files_for_participants_ozon", mo
     # Read the dataset
     train_batch_size = 8
     num_epochs = 50
-    path = f'../{mode.lower()}_minilm/'
+    path = f'{mode.lower()}_minilm'
     if not os.path.exists(path):
         os.mkdir(path)
     model_save_path = os.path.join(path, model_name) #+ '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     # Load a pre-trained sentence transformer model
-    model = SentenceTransformer(model_name, device=1)
+    model = SentenceTransformer(model_name)
 
     # Convert the dataset to a DataLoader ready for training
     logging.info("Read STSbenchmark train dataset")

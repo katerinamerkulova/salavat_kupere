@@ -24,10 +24,10 @@ sw = nltk.download("stopwords")
 mystem = Mystem()
 russian_stopwords = stopwords.words("russian")
 
-colors = open("../files/colors.txt").read().split("\n")
+colors = open("../colors/colors.txt").read().split("\n")
 colors = {color: i for i, color in enumerate(colors, start=1)}
 colors[None] = 0
-colors_mapping = json.load(open("../files/colors_mapping.json"))
+colors_mapping = json.load(open("../colors/colors_mapping.json"))
 
 
 def process_char(name, chars):

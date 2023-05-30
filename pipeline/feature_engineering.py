@@ -21,16 +21,19 @@ warnings.filterwarnings("ignore")
 pd.set_option("use_inf_as_na", True)
 
 #### Just some code to print debug information to stdout
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
+logging.basicConfig(format="%(asctime)s - %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S",
                     level=logging.INFO)
 
-minilm_name = SentenceTransformer('../models/name_minilm')  # todo PATH TO RELEASE
-minilm_name_cat = SentenceTransformer('../models/full_minilm')
 
-
-def etl_data(DATA_DIR = "../../data/hackathon_files_for_participants_ozon"):
+def etl_data(
+        DATA_DIR="../../data/hackathon_files_for_participants_ozon",
+        MODEL_DIR="../models"
+):
     start_time = time.time()
+    minilm_name = SentenceTransformer(os.path.join(MODEL_DIR, "name_minilm"))
+    minilm_name_cat = SentenceTransformer(os.path.join(MODEL_DIR, "full_minilm"))
+
     train_pairs = pd.read_parquet(os.path.join(DATA_DIR, "train_pairs.parquet"))
     test_pairs = pd.read_parquet(os.path.join(DATA_DIR, "test_pairs_wo_target.parquet"))
 
@@ -259,31 +262,36 @@ def etl_data(DATA_DIR = "../../data/hackathon_files_for_participants_ozon"):
 
     run_time = format(round((time.time() - start_time)/60,2))
     print("All columns of df:", df.columns.shape)
-    print('Total time of feature engineering:', run_time)
+    print("Total time of feature engineering:", run_time)
 
-    train = df[df['Train'] == True]
-    test = df[df['Train'] == False]
+    train = df[df["Train"] == True]
+    test = df[df["Train"] == False]
     
-    train.drop(columns=['Train'])
-    train.to_parquet(os.path.join(DATA_DIR, 'train_processed_minilm_chars.parquet'), index=False)
+    train.drop(columns=["Train"])
+    train.to_parquet(os.path.join(DATA_DIR, "train_processed_minilm_chars.parquet"), index=False)
     
-    test.drop(columns=['Train'])
-    test.to_parquet(os.path.join(DATA_DIR, 'test_processed_minilm_chars.parquet'), index=False)
+    test.drop(columns=["Train"])
+    test.to_parquet(os.path.join(DATA_DIR, "test_processed_minilm_chars.parquet"), index=False)
     return df
 
 
 if __name__ == "__main__":
-    etl_data()
     argParser = argparse.ArgumentParser()
-    argParser.add_argument("--data_dir", 
-                        default=None,
-                        type=str,
-                        required=True,
-                        help="Path to dir with data")
+    argParser.add_argument("--data_dir",
+                           default=None,
+                           type=str,
+                           required=True,
+                           help="Path to dir with data")
+    argParser.add_argument("--model_dir",
+                           default=None,
+                           type=str,
+                           required=True,
+                           help="Path to dir with model")
 
     args = argParser.parse_args()
-    data_dir=args.data_dir
+    data_dir = args.data_dir
+    model_dir = args.model_dir
     if data_dir is not None:
-        etl_data(DATA_DIR=data_dir)
+        etl_data(DATA_DIR=data_dir, MODEL_DIR=model_dir)
     else:
         logging.error("no --data_dir param as input")

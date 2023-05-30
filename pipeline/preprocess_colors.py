@@ -8,12 +8,15 @@ import pandas as pd
 import translators as ts
 
 #### Just some code to print debug information to stdout
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
+logging.basicConfig(format="%(asctime)s - %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S",
                     level=logging.INFO)
 
 
-def process_color(DATA_DIR="../../data/hackathon_files_for_participants_ozon"):
+def process_color(
+        DATA_DIR="../../data/hackathon_files_for_participants_ozon",
+        COLOR_DIR="../colors"
+):
     train_data = pd.read_parquet(os.path.join(DATA_DIR, "train_data.parquet"))
     colors = set()
     for color in train_data["color_parsed"]:
@@ -43,12 +46,12 @@ def process_color(DATA_DIR="../../data/hackathon_files_for_participants_ozon"):
     matching.update(matching_update)
     matching = {k: v[0] for k, v in matching.items()}
 
-    with open("../files/colors_mapping.json", "w", encoding="utf-8") as out:
+    with open(os.path.join(COLOR_DIR, "colors_mapping.json"), "w", encoding="utf-8") as out:
         json.dump(matching, out, ensure_ascii=False, indent=1, sort_keys=True)
 
     colors = {color for color in colors if color not in matching}
     colors.update({"красно-коричневый", "бледно-пурпурный", "коричнево-бежевый"})
-    with open("../files/colors.txt", "w", encoding="utf-8") as out:
+    with open(os.path.join(COLOR_DIR, "colors.txt"), "w", encoding="utf-8") as out:
         out.write("\n".join(sorted(colors)))
 
 
@@ -59,9 +62,15 @@ if __name__ == "__main__":
                            type=str,
                            required=True,
                            help="Path to dir with data")
+    argParser.add_argument("--color_dir",
+                           default=None,
+                           type=str,
+                           required=True,
+                           help="Path to dir to save color")
     args = argParser.parse_args()
-    data_dir=args.data_dir
+    data_dir = args.data_dir
+    color_dir = args.color_dir
     if data_dir is not None:
-        process_color(DATA_DIR=data_dir)
+        process_color(DATA_DIR=data_dir, COLOR_DIR=color_dir)
     else:
         logging.error("no --data_dir param as input")

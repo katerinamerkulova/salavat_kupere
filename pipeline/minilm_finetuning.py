@@ -40,7 +40,7 @@ def run_training(DATA_DIR="../../data/hackathon_files_for_participants_ozon", mo
     model_name = 'all-MiniLM-L6-v2' # Тут добавить путь до модели или папки откуда модель подгрузиться
     # Read the dataset
     train_batch_size = 8
-    num_epochs = 50
+    num_epochs = 1
     path = f'{mode.lower()}_minilm'
     if not os.path.exists(path):
         os.mkdir(path)

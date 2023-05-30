@@ -1,6 +1,7 @@
-# Data folder
-
-* DATA_DIR="Path_to_folder"
+# Datadir
+--data_dir param is folder with competition data
+Example:
+`"../data/"`
 
 # Install requirements
 
@@ -10,14 +11,13 @@
 
 `cd ./pipeline`
 
-# Prepare embeddings
+# Train model for embeddings ~ 1h on gpu
 
 `python minilm_finetuning.py --data_dir="../data/"`
 
 # Preprocess dataset
 
-
-`python preprocess.py`
+`python preprocess.py` --data_dir="../data/"`
 
 # Inference
 

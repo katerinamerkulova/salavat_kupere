@@ -411,40 +411,6 @@ def text_dense_distances(ozon_embedding, comp_embedding):
     return pair_features
 
 
-# from sentence_transformers import SentenceTransformer
-# STRANSFORMERS = {
-#     'sentence-transformers/paraphrase-mpnet-base-v2': ('mpnet', 768),
-#     'sentence-transformers/bert-base-wikipedia-sections-mean-tokens': ('wikipedia', 768)
-# }
-# def get_encode(df, encoder, name):    
-#     device = torch.device(
-#         "cuda:0" if torch.cuda.is_available() else "cpu")
-
-#     model = SentenceTransformer(
-#         encoder, 
-#         cache_folder=f'./hf_{name}/'
-#     )
-#     model.to(device)
-#     model.eval()
-#     return np.array(model.encode(df['excerpt']))
-# def get_embeddings(df, emb=None, tolist=True):
-    
-#     ret = pd.DataFrame(index=df.index)
-    
-#     for e, s in STRANSFORMERS.items():
-#         if emb and s[0] not in emb:
-#             continue
-        
-#         ret[s[0]] = list(get_encode(df, e, s[0]))
-#         if tolist:
-#             ret = pd.concat(
-#                 [ret, pd.DataFrame(
-#                     ret[s[0]].tolist(),
-#                     columns=[f'{s[0]}_{x}' for x in range(s[1])],
-#                     index=ret.index)],
-#                 axis=1, copy=False, sort=False)
-    
-#     return ret
 
 
 def embed_bert_cls(text, model, tokenizer):

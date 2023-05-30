@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import random
 import re
 from functools import partial
@@ -241,7 +241,6 @@ def text_dense_distances(ozon_embedding, comp_embedding):
     return pair_features
 
 
-# Preprocess function
 def preprocess_text(text):
     tokens = mystem.lemmatize(text.lower())
     tokens = [token for token in tokens if token not in russian_stopwords\

@@ -1,4 +1,7 @@
+import argparse
 import json
+import logging
+import os
 import time
 import warnings
 
@@ -10,27 +13,29 @@ from fuzzywuzzy import fuzz
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
-from utils import get_pic_features_func, text_dense_distances, preprocess_text, process_characteristics, process_char, \
-    process_colors, matching_numbers, make_characteristics_df
+from utils import get_pic_features_func, text_dense_distances, preprocess_text, process_characteristics, process_char
+from utils import process_colors, matching_numbers, make_characteristics_df
 
 tqdm.pandas()
 warnings.filterwarnings("ignore")
 pd.set_option("use_inf_as_na", True)
 
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO)
 
-minilm_name = SentenceTransformer("/home/merkulova/hackathon/output/all-MiniLM-L6-v2-2023-05-20_17-54-44", device=0)
-minilm_name_cat = SentenceTransformer("/home/merkulova/hackathon/hackathon_master_kate/chars_names_minilm/all-MiniLM-L6-v2-2023-05-26_21-54-53", device=0)
+minilm_name = SentenceTransformer('../models/name_minilm')  # todo PATH TO RELEASE
+minilm_name_cat = SentenceTransformer('../models/full_minilm')
 
 
-def etl_data():
+def etl_data(DATA_DIR = "../../data/hackathon_files_for_participants_ozon"):
     start_time = time.time()
-    print(f"Start preprocessing dataframe" )
+    train_pairs = pd.read_parquet(os.path.join(DATA_DIR, "train_pairs.parquet"))
+    test_pairs = pd.read_parquet(os.path.join(DATA_DIR, "test_pairs_wo_target.parquet"))
 
-    train_pairs = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/train_pairs.parquet")
-    test_pairs = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/test_pairs_wo_target.parquet")
-
-    train = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/train_data.parquet")
-    test = pd.read_parquet("../../data/hackathon_files_for_participants_ozon/test_data.parquet")
+    train = pd.read_parquet(os.path.join(DATA_DIR, "train_data.parquet"))
+    test = pd.read_parquet(os.path.join(DATA_DIR, "test_data.parquet"))
 
     data = pd.concat([train, test])
 
@@ -39,7 +44,7 @@ def etl_data():
     data["name_cat"] = data["name_cat"].fillna("")
     data["name_cat_minilm"] = data["name_cat"].progress_apply(lambda text: minilm_name_cat.encode([text])[0])
 
-    data["clean_name"] = data["name"].progress_apply(preprocess_text) # Need to know if it really necessary ~ 1min
+    data["clean_name"] = data["name"].progress_apply(preprocess_text)
     data["main_pic_embeddings_resnet_v1"] = data["main_pic_embeddings_resnet_v1"].progress_apply(lambda x: x[0]) # unpack
 
     data["cat3"] = data["categories"].progress_apply(lambda x: json.loads(x)["3"])
@@ -254,18 +259,31 @@ def etl_data():
 
     run_time = format(round((time.time() - start_time)/60,2))
     print("All columns of df:", df.columns.shape)
-    print("Total time of feature engineering:", run_time)
+    print('Total time of feature engineering:', run_time)
 
-    train = df[df["Train"] == True]
-    test = df[df["Train"] == False]
-
-    train.drop(columns=["Train"])
-    train.to_parquet("../../data/train_processed_minilm_chars_by_cat.parquet", index=False)
-
-    test.drop(columns=["Train"])
-    test.to_parquet("../../data/test_processed_minilm_chars_by_cat.parquet", index=False)
+    train = df[df['Train'] == True]
+    test = df[df['Train'] == False]
+    
+    train.drop(columns=['Train'])
+    train.to_parquet(os.path.join(DATA_DIR, 'train_processed_minilm_chars.parquet'), index=False)
+    
+    test.drop(columns=['Train'])
+    test.to_parquet(os.path.join(DATA_DIR, 'test_processed_minilm_chars.parquet'), index=False)
     return df
 
 
 if __name__ == "__main__":
     etl_data()
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("--data_dir", 
+                        default=None,
+                        type=str,
+                        required=True,
+                        help="Path to dir with data")
+
+    args = argParser.parse_args()
+    data_dir=args.data_dir
+    if data_dir is not None:
+        etl_data(DATA_DIR=data_dir)
+    else:
+        logging.error("no --data_dir param as input")

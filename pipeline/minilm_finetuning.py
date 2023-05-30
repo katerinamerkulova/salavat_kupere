@@ -21,15 +21,23 @@ def run_training(
         MODEL_DIR="../models",
         mode="FULL"  # NAME
 ):
+    
+    print(os.path.exists(MODEL_DIR))
+    if not os.path.exists(MODEL_DIR):
+        os.makedirs(MODEL_DIR)
     model_name = os.path.join(MODEL_DIR, "all-MiniLM-L6-v2")
-    model = SentenceTransformer(model_name)
+    try:
+        model = SentenceTransformer(model_name)
+    except:
+        logging.error(f'No model {model_name}, Load from internet:')
+        model = SentenceTransformer("all-MiniLM-L6-v2")
     train_batch_size = 8
-    num_epochs = 50
+    num_epochs = 1
 
     model_save_path = os.path.join(MODEL_DIR, f"{mode.lower()}_minilm")
 
     logging.info("Read STSbenchmark train dataset")
-    dataset = pd.read_parquet(os.path.join(DATA_DIR, "train_pairs.parquet"))
+    dataset = pd.read_parquet(os.path.join(DATA_DIR, "train_pairs.parquet"))#salavat_kupere/data/train_pairs.parquet
     etl = pd.read_parquet(os.path.join(DATA_DIR, "train_data.parquet"))
 
     samples = []

@@ -11,7 +11,7 @@ import logging
 import math
 from datetime import datetime
 from pathlib import Path
-
+import argparse
 import pandas as pd
 from sentence_transformers import SentenceTransformer, LoggingHandler, losses, InputExample
 from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
@@ -19,8 +19,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 
-model_path = Path.cwd() / 'models'
-model_name = 'all-MiniLM-L6-v2' # Тут добавить путь до модели или папки откуда модель подгрузиться
+
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -28,19 +27,21 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     level=logging.INFO,
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
-import argparse
+
 
 
 
 def run_training(DATA_DIR="../../data/hackathon_files_for_participants_ozon", mode='FULL'):
     '''
     
-    mode = 'FULL' # CHAR, NAME
+    mode = 'FULL' #  NAME
     '''
+
+    model_name = 'all-MiniLM-L6-v2' # Тут добавить путь до модели или папки откуда модель подгрузиться
     # Read the dataset
     train_batch_size = 8
-    num_epochs = 100
-    path = f'../chars_{mode}_minilm/'
+    num_epochs = 50
+    path = f'../{mode.lower()}_minilm/'
     if not os.path.exists(path):
         os.mkdir(path)
     model_save_path = os.path.join(path, model_name) #+ '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -67,10 +68,7 @@ def run_training(DATA_DIR="../../data/hackathon_files_for_participants_ozon", mo
 
         if mode == 'NAME':
             text1, text2 = name1, name2
-        if mode == 'CHAR':
-            if not chars1 or not chars2:
-                continue
-            text1, text2 = char1, char2
+
         if mode == 'FULL':
             text1, text2 = f'{name1} {char1}', f'{name2} {char2}'
 
@@ -124,7 +122,6 @@ data_dir=args.data_dir
 if data_dir is not None:
 
     run_training(DATA_DIR=data_dir,mode="FULL")
-    run_training(DATA_DIR=data_dir,mode="CHAR")
     run_training(DATA_DIR=data_dir,mode="NAME")
 else:
     logging.error("no --data_dir param as input")
